@@ -15,14 +15,20 @@ var json = jsoniter.ConfigFastest
 
 // formatMessage 格式化消息数组
 func formatMessage(msg interface{}) string {
+	var data string
 	switch m := msg.(type) {
 	case string:
-		return m
+		data = m
 	case fmt.Stringer:
-		return m.String()
+		data = m.String()
 	default:
 		s, _ := json.MarshalToString(msg)
-		return s
+		data = s
+	}
+	if len(data) > 128 {
+		return fmt.Sprint(data[:128], "...")
+	} else {
+		return data
 	}
 }
 
