@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 // Type check the ctx.Event's type
@@ -92,7 +93,12 @@ func CommandRule(commands ...string) Rule {
 		for _, command := range commands {
 			if strings.HasPrefix(cmdMessage, command) {
 				ctx.State["command"] = command
-				arg := strings.TrimLeft(cmdMessage[len(command):], " ")
+				msgLeft := cmdMessage[len(command):]
+				// If there is additional msg after command, check it must be whitespace
+				if len(msgLeft) > 0 && !unicode.IsSpace([]rune(msgLeft)[0]) {
+					return false
+				}
+				arg := strings.TrimLeft(msgLeft, " \t\n")
 				if len(ctx.Event.Message) > 1 {
 					arg += ctx.Event.Message[1:].ExtractPlainText()
 				}
