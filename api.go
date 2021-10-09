@@ -2,6 +2,7 @@ package zero
 
 import (
 	"fmt"
+	"strings"
 
 	jsoniter "github.com/json-iterator/go"
 	log "github.com/sirupsen/logrus"
@@ -25,6 +26,8 @@ func formatMessage(msg interface{}) string {
 		s, _ := json.MarshalToString(msg)
 		data = s
 	}
+	data = strings.ReplaceAll(data, "\n", "\\n")
+	data = strings.ReplaceAll(data, "\t", "\\t")
 	if len(data) > 128 {
 		return fmt.Sprint(data[:128], "...")
 	} else {
