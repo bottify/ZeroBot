@@ -31,13 +31,15 @@ type WSClient struct {
 	Url         string // ws连接地址
 	AccessToken string
 	selfID      int64
+	RecvTimeout int64 // api调用超时时间
 }
 
 // NewWebSocketClient 默认Driver，使用正向WS通信
-func NewWebSocketClient(url, accessToken string) *WSClient {
+func NewWebSocketClient(url, accessToken string, timeout int64) *WSClient {
 	return &WSClient{
 		Url:         url,
 		AccessToken: accessToken,
+		RecvTimeout: timeout,
 	}
 }
 
@@ -138,7 +140,9 @@ func (ws *WSClient) CallApi(req zero.APIRequest) (zero.APIResponse, error) {
 			return nullResponse, errors.New("channel closed")
 		}
 		return rsp, nil
-	case <-time.After(30 * time.Second):
+	case <-time.After(time.Duration(ws.RecvTimeout) * time.Second):
+		ws.conn.Close()
+		log.Warn("发生超时，断开 websocket 连接等待重连")
 		return nullResponse, errors.New("timed out")
 	}
 }
